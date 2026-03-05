@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "court_cases")
@@ -30,6 +31,7 @@ public class CourtCase implements Serializable {
 
     // Bulletproof Cardinality: One Court Case can have multiple warrants. 
     // mappedBy = "courtCase" tells Hibernate that the Warrant entity owns the foreign key.
+    @JsonIgnore
     @OneToMany(mappedBy = "courtCase", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Warrant> warrants = new ArrayList<>();
 
