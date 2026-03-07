@@ -10,7 +10,6 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "citizens")
@@ -32,12 +31,12 @@ public class Citizen implements Serializable {
     private String role;
 
     // Bulletproof Cardinality: One Citizen can be the applicant in multiple cases
-    @JsonIgnore
+    
     @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL)
     private List<CourtCase> casesAsApplicant = new ArrayList<>();
 
     // Bulletproof Cardinality: One Citizen can be the respondent in multiple cases
-    @JsonIgnore
+   
     @OneToMany(mappedBy = "respondent", cascade = CascadeType.ALL)
     private List<CourtCase> casesAsRespondent = new ArrayList<>();
 
