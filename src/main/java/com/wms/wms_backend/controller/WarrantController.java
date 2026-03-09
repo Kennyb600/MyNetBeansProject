@@ -1,49 +1,51 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.wms.wms_backend.controller;
 
-import com.wms.wms_backend.domain.Warrant;
-import com.wms.wms_backend.repository.WarrantRepository;
+import com.wms.wms_backend.dto.WarrantDTO;
+import com.wms.wms_backend.service.WarrantService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/warrants")
 public class WarrantController {
 
-    private final WarrantRepository warrantRepository;
+    private final WarrantService warrantService;
 
-    // Constructor Injection: Spring Boot automatically provides the repository
     @Autowired
-    public WarrantController(WarrantRepository warrantRepository) {
-        this.warrantRepository = warrantRepository;
+    public WarrantController(WarrantService warrantService) {
+        this.warrantService = warrantService;
     }
 
-    // ----------------------------------------------------
-    // GET: http://localhost:9090/api/warrants
-    // Retrieves all existing warrants from the database
-    // ----------------------------------------------------
     @GetMapping
-    public List<Warrant> getAllWarrants() {
-        System.out.println("Web request received: Fetching all warrants!");
-        return warrantRepository.findAll();
+    public ResponseEntity<List<WarrantDTO>> getAllWarrants() {
+        List<WarrantDTO> warrants = warrantService.getAllWarrants();
+        return new ResponseEntity<>(warrants, HttpStatus.OK);
     }
 
-    // ----------------------------------------------------
-    // POST: http://localhost:9090/api/warrants
-    // Creates a new warrant attached to an existing court case
-    // ----------------------------------------------------
-    @PostMapping
-    public Warrant createWarrant(@RequestBody Warrant newWarrant) {
-        System.out.println("Web request received: Issuing a new warrant!");
-        return warrantRepository.save(newWarrant);
+    @GetMapping("/{id}")
+    public ResponseEntity<WarrantDTO> getWarrantById(@PathVariable Long id) {
+        Optional<WarrantDTO> warrant = warrantService.getWarrantById(id);
+        return warrant.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    // Issue a new warrant attached to a specific case
+    @PostMapping("/issue")
+    public ResponseEntity<WarrantDTO> issueWarrant(@RequestParam Long caseId, @RequestParam BigDecimal amountOwed) {
+        WarrantDTO newWarrant = warrantService.issueWarrant(caseId, amountOwed);
+        return new ResponseEntity<>(newWarrant, HttpStatus.CREATED);
+    }
+
+    // Update the status of a warrant (e.g., from Active to Executed)
+    @PutMapping("/{id}/status")
+    public ResponseEntity<WarrantDTO> updateStatus(@PathVariable Long id, @RequestParam String status) {
+        WarrantDTO updatedWarrant = warrantService.updateWarrantStatus(id, status);
+        return new ResponseEntity<>(updatedWarrant, HttpStatus.OK);
     }
 }
